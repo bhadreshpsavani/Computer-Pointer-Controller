@@ -2,8 +2,9 @@
 
 *TODO:* Write a short introduction to your project
 
-## Project Set Up and Installation
-*TODO:* Explain the setup procedures to run your project. For instance, this can include your project directory structure, the models you need to download and where to place them etc. Also include details about how to install the dependencies your project requires.
+## Project Set Up and Installation:
+
+Step1. Initialize OpenVino Environment Using `source /opt/intel/openvino/bin/setupvars.sh -pyver 3.5`
 
 ## Demo
 *TODO:* Explain how to run a basic demo of your model.
