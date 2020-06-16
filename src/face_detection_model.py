@@ -33,7 +33,7 @@ class Face_Detection_Model:
         return loaded model
         '''
         try:
-            self.net = self.core.load_network(network=self.model, device_name=self.device, num_requests=1)
+            self.net = self.core.load_network(network=self.model, device_name=self.device_name, num_requests=1)
         except Exception as e:
             print("Error While Loading the model",e) 
 
@@ -45,14 +45,13 @@ class Face_Detection_Model:
         p_image=self.preprocess_input(image)
         outputs=self.net.infer({self.input_name:p_image})
         outputs=outputs['detection_out']
-        outputs=self.preprocess_output(outputs)
-        detections, o_image=self.draw_outputs(outputs, image)
-        return detections, o_image
+        detections, cropped_image=self.preprocess_output(outputs, image)
+        return detections, cropped_image
 
     def check_model(self):
         raise NotImplementedError
         
-    def draw_outputs(self, coords, image):
+    def preprocess_output(self, coords, image):
         '''
         We will have multiple detection for single image
         This function will take image and preprocessed cordinates
@@ -60,6 +59,8 @@ class Face_Detection_Model:
         '''
         width, height = int(image.shape[1]), int(image.shape[0])
         detections=[]
+        cropped_image=image
+        coords=np.squeeze(coords)
         try:
             for coord in coords:
                 image_id, label, threshold, xmin, ymin, xmax, ymax=coord
@@ -70,11 +71,11 @@ class Face_Detection_Model:
                     ymin=int(ymin*height)
                     xmax=int(xmax*width)
                     ymax=int(ymax*height)
-                    cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0,0,225), 1)
                     detections.append((xmin,ymin, xmax, ymax))
+                    cropped_image=image[ymin:ymax, xmin:xmax]
         except Exception as e:
             print("Error While drawing bounding boxes on image",e) 
-        return detections, image
+        return detections, cropped_image
 
     def preprocess_input(self, image):
         '''
@@ -92,15 +93,3 @@ class Face_Detection_Model:
         except Exception as e:
             print("Error While preprocessing Image",e) 
         return image
-
-    def preprocess_output(self, outputs):
-        '''
-        Input: cordinates
-        Description: Our model return cordinates in the form of array,
-        Return: processed cordinates
-        '''
-        try:
-            outputs=np.squeeze(outputs)
-        except Exception as e:
-            print("Error While preprocessing Outputs",e) 
-        return outputs
