@@ -13,12 +13,14 @@ class Head_Pose_Estimation_Model:
         '''
         self.model_structure=model_name+'.xml'
         self.model_weights=model_name+'.bin'
+        print(self.model_structure, self.model_weights)
         self.device_name=device
         self.threshold=threshold
         try:
-            self.core=IECore()
-            self.model=self.core(self.model_structure, self.model_weights)
+            self.core = IECore()
+            self.model=IENetwork(self.model_structure, self.model_weights)
         except Exception as e:
+            print("Error While Initilizing Head Pose Estimation Model Class",e)
             raise ValueError("Could not Initialise the network. Have you enterred the correct model path?")
         self.input_name=next(iter(self.model.inputs))
         self.input_shape=self.model.inputs[self.input_name].shape
@@ -31,7 +33,7 @@ class Head_Pose_Estimation_Model:
         return loaded model
         '''
         try:
-            self.net = self.core.load_network(network=self.model, device_name=self.device, num_requests=1)
+            self.net = self.core.load_network(network=self.model, device_name=self.device_name, num_requests=1)
         except Exception as e:
             print("Error While Loading the model",e) 
 
@@ -42,12 +44,24 @@ class Head_Pose_Estimation_Model:
         '''
         p_image=self.preprocess_input(image)
         outputs=self.net.infer({self.input_name:p_image})
-        outputs=outputs['detection_out']
-        outputs=self.preprocess_output(outputs)
-        return outputs
-
-    def check_model(self):
-        raise NotImplementedError
+        f_output=self.preprocess_output(outputs)
+        return f_output
+        
+    def preprocess_output(self, outputs):
+        '''
+        Model output is a dictionary having below three arguments:
+             "angle_y_fc", shape: [1, 1] - Estimated yaw (in degrees).
+             "angle_p_fc", shape: [1, 1] - Estimated pitch (in degrees).
+             "angle_r_fc", shape: [1, 1] - Estimated roll (in degrees).
+        '''
+        final_output=[]
+        try:
+            final_output.append(outputs['angle_y_fc'][0][0])
+            final_output.append(outputs['angle_p_fc'][0][0])
+            final_output.append(outputs['angle_r_fc'][0][0])
+        except Exception as e:
+            print("Error While preprocessing output",e) 
+        return final_output
 
     def preprocess_input(self, image):
         '''
@@ -65,15 +79,3 @@ class Head_Pose_Estimation_Model:
         except Exception as e:
             print("Error While preprocessing Image",e) 
         return image
-
-    def preprocess_output(self, outputs):
-        '''
-        Input: cordinates
-        Description: Our model return cordinates in the form of array,
-        Return: processed cordinates
-        '''
-        try:
-            outputs=np.squeeze(outputs)
-        except Exception as e:
-            print("Error While preprocessing Outputs",e) 
-        return outputs
