@@ -1,6 +1,7 @@
 from openvino.inference_engine import IENetwork, IECore
 import numpy as np
 import cv2
+import logging
 
 class Head_Pose_Estimation_Model:
     '''
@@ -11,16 +12,16 @@ class Head_Pose_Estimation_Model:
         '''
         This will initiate Head Pose Estimation Model class object
         '''
-        self.model_structure=model_name+'.xml'
-        self.model_weights=model_name+'.bin'
-        print(self.model_structure, self.model_weights)
+        self.logger=logging.getLogger('hp')
+        self.model_structure=model_name
+        self.model_weights=model_name.replace('.xml','.bin')
         self.device_name=device
         self.threshold=threshold
         try:
             self.core = IECore()
             self.model=IENetwork(self.model_structure, self.model_weights)
         except Exception as e:
-            print("Error While Initilizing Head Pose Estimation Model Class",e)
+            self.logger.error("Error While Initilizing Head Pose Estimation Model Class"+str(e))
             raise ValueError("Could not Initialise the network. Have you enterred the correct model path?")
         self.input_name=next(iter(self.model.inputs))
         self.input_shape=self.model.inputs[self.input_name].shape
@@ -35,16 +36,19 @@ class Head_Pose_Estimation_Model:
         try:
             self.net = self.core.load_network(network=self.model, device_name=self.device_name, num_requests=1)
         except Exception as e:
-            print("Error While Loading the model",e) 
+            self.logger.error("Error While Loading Head Pose Estimation Model"+str(e)) 
 
     def predict(self, image):
         '''
         This method will take image as a input and 
         does all the preprocessing, postprocessing
         '''
-        p_image=self.preprocess_input(image)
-        outputs=self.net.infer({self.input_name:p_image})
-        f_output=self.preprocess_output(outputs)
+        try:
+            p_image=self.preprocess_input(image)
+            outputs=self.net.infer({self.input_name:p_image})
+            f_output=self.preprocess_output(outputs)
+        except Exception as e:
+            self.logger.error("Error While prediction in Head Pose Estimation Model"+str(e))
         return f_output
         
     def preprocess_output(self, outputs):
@@ -60,7 +64,7 @@ class Head_Pose_Estimation_Model:
             final_output.append(outputs['angle_p_fc'][0][0])
             final_output.append(outputs['angle_r_fc'][0][0])
         except Exception as e:
-            print("Error While preprocessing output",e) 
+            self.logger.error("Error While preprocessing output in Head Pose Estimation Model"+str(e)) 
         return final_output
 
     def preprocess_input(self, image):
@@ -77,5 +81,5 @@ class Head_Pose_Estimation_Model:
             image = image.transpose((2,0,1))
             image = image.reshape(1, *image.shape)
         except Exception as e:
-            print("Error While preprocessing Image",e) 
+            self.logger.error("Error While preprocessing Image in Head Pose Estimation Model"+str(e)) 
         return image
