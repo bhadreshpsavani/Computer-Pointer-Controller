@@ -32,9 +32,9 @@ def build_argparser():
     
     parser.add_argument("-flags", "--previewFlags", required=False, nargs='+',
                         default=[],
-                       help="Specify flag from fd, lr, hp, ge like -flags f l(Space seperated if multiple values)"
-                       "fd for faceDetectionModel, lr for landmarkRegressionModel"
-                       "hp for headPoseEstimationModel, ge for gazeEstimationModel")
+                       help="Specify flag from ff, fl, fh, fg like -flags f l(Space seperated if multiple values)"
+                       "ff for faceDetectionModel, fl for landmarkRegressionModel"
+                       "fh for headPoseEstimationModel, fg for gazeEstimationModel")
     
     parser.add_argument("-prob", "--prob_threshold", required=False, type=float,
                         default=0.6,
@@ -105,44 +105,49 @@ def main():
             cv2.imshow('video', cv2.resize(frame, (500, 500)))
             
         key=cv2.waitKey(60)
-        
-        face_cords, cropped_image=face_detection_model.predict(frame)
-        
-        if type(cropped_image)==int:
-            logger.error("Unable to detect the face")
-            if key==27:
-                break
+
+        try:
+            face_cords, cropped_image=face_detection_model.predict(frame)
+
+            if type(cropped_image)==int:
+                logger.error("Unable to detect the face")
+                if key==27:
+                    break
+                continue
+
+            left_eye_image, right_eye_image, eye_cords=landmark_detection_model.predict(cropped_image)
+            pose_output=head_pose_estimation_model.predict(cropped_image)
+            mouse_cord, gaze_vector=gaze_estimation_model.predict(left_eye_image, right_eye_image, pose_output)
+        except Exception as e:
+            logger.error("Could predict using model"+str(e))
             continue
-            
-        left_eye_image, right_eye_image, eye_cords=landmark_detection_model.predict(cropped_image)
-        pose_output=head_pose_estimation_model.predict(cropped_image)
-        mouse_cord, gaze_vector=gaze_estimation_model.predict(left_eye_image, right_eye_image, pose_output)
+
         
         if not len(previewFlags)==0:
             previewFrame=frame.copy()
-            if 'fd' in previewFlags:
-                cv2.rectangle(previewFrame, (face_cords[0], face_cords[1]), (face_cords[2], face_cords[3]), (0,255,0), 3)
-                previewFrame=cropped_image
-            if 'lr' in previewFlags:
-                cv2.rectangle(cropped_image, (eye_cords[0][0]-10, eye_cords[0][1]+10), (eye_cords[0][1]-10, eye_cords[0][3]+10), (0,255,0), 3)
-                cv2.rectangle(cropped_image, (eye_cords[0][0]-10, eye_cords[0][1]+10), (eye_cords[0][1]-10, eye_cords[0][3]+10), (0,255,0), 3)
-                previewFrame[face_cords[1]:face_cords[3], face_cords[0]:face_cords[2]]=cropped_image
-            if 'hp' in previewFlags:
+            if 'ff' in previewFlags:
+                cv2.rectangle(previewFrame, (face_cords[0][0], face_cords[0][1]), (face_cords[0][2], face_cords[0][3]), (0,255,0), 3)
+                previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
+            if 'fl' in previewFlags:
+                cv2.rectangle(cropped_image, (eye_cords[0][0], eye_cords[0][1]), (eye_cords[0][1], eye_cords[0][3]), (0,255,0), 3)
+                cv2.rectangle(cropped_image, (eye_cords[1][0], eye_cords[1][1]), (eye_cords[1][1], eye_cords[1][3]), (0,255,0), 3)
+                previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
+            if 'fh' in previewFlags:
                 cv2.putText(
                     previewFrame, 
                     "Pose Angles: yaw:{:.2f} | pitch:{:.2f} | roll:{:.2f}".format(pose_output[0], pose_output[1], pose_output[2]), 
                     (10, 20), 
                     cv2.FONT_HERSHEY_COMPLEX, 
                     0.30, (0, 255, 0), 1)
-            if 'ge' in previewFlags1:
+            if 'fg' in previewFlags:
                 x, y, w=int(gaze_vector[0]*12), int(gaze_vector[1]*12), 160
                 le=cv2.line(left_eye_image.copy(), (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
-                cv2.line(le, (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
+                cv2.line(le, (x-w, y+w), (x+w, y-w), (255, 0, 255), 2)
                 re=cv2.line(right_eye_image.copy(), (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
-                cv2.line(re, (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
-                cropped_image[eye_cords[0][1]:eye_cords[0][3], eye_cords[0][0]:eye_cords[0][2]]=le
-                cropped_image[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]]=re
-                previewFrame[face_cords[1]:face_cords[3], face_cords[0]:face_cords[2]]=cropped_image
+                cv2.line(re, (x-w, y+w), (x+w, y-w), (255, 0, 255), 2)
+                cropped_image[eye_cords[0][1]:eye_cords[0][3], eye_cords[0][0]:eye_cords[0][2]] = le
+                cropped_image[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]] = re
+                previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
             cv2.imshow('preview', cv2.resize(previewFrame, (500, 500)))
                 
         

@@ -1,16 +1,32 @@
 # Computer Pointer Controller
 
-*TODO:* Write a short introduction to your project
+In this project, you will use a [Gaze Detection Model](https://docs.openvinotoolkit.org/latest/_models_intel_gaze_estimation_adas_0002_description_gaze_estimation_adas_0002.html) to control the mouse pointer of your computer. You will be using the Gaze Estimation model to estimate the gaze of the user's eyes and change the mouse pointer position accordingly. This project will demonstrate your ability to run multiple models in the same machine and coordinate the flow of data between those models.
 
+You will be using the InferenceEngine API from Intel's OpenVino ToolKit to build the project. The gaze estimation model requires three inputs:
+
+* The head pose
+* The left eye image
+* The right eye image.
+
+To get these inputs, you will have to use three other OpenVino models:
+
+* [Face Detection](https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_binary_0001_description_face_detection_adas_binary_0001.html)
+* [Head Pose Estimation](https://docs.openvinotoolkit.org/latest/_models_intel_head_pose_estimation_adas_0001_description_head_pose_estimation_adas_0001.html)
+* [Facial Landmarks Detection](https://docs.openvinotoolkit.org/latest/_models_intel_landmarks_regression_retail_0009_description_landmarks_regression_retail_0009.html)
+
+### The Pipeline:
+You will have to coordinate the flow of data from the input, and then amongst the different models and finally to the mouse controller. The flow of data will look like this:
+
+![pipeline](/imgs/pipeline.png)
 ## Project Set Up and Installation:
 
 Step1. Initialize OpenVino Environment Using `source /opt/intel/openvino/bin/setupvars.sh -pyver 3.5`
+
 
 ## Demo
 *TODO:* Explain how to run a basic demo of your model.
 
 ## Documentation
-*TODO:* Include any documentation that users might need to better understand your project code. For instance, this is a good place to explain the command line arguments that your project supports.
 
 ## Benchmarks
 *TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.

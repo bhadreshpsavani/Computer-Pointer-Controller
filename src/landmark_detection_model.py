@@ -78,7 +78,7 @@ class Landmark_Detection_Model:
             left_eye_image=image[left_eye_ymin:left_eye_ymax, left_eye_xmin:left_eye_xmax]
             right_eye_image=image[right_eye_ymin:right_eye_ymax, right_eye_xmin:right_eye_xmax]
             
-            eye_cords=[[left_eye_xmin, left_eye_xmax, left_eye_xmax, left_eye_ymax],[right_eye_xmin, right_eye_xmax, right_eye_ymin, right_eye_ymax]]
+            eye_cords=[[left_eye_xmin, left_eye_ymin, left_eye_xmax, left_eye_ymax],[right_eye_xmin, right_eye_ymin, right_eye_xmax, right_eye_ymax]]
             
         except Exception as e:
             self.logger.error("Error While drawing bounding boxes on image in Landmark Detection Model"+str(e)) 

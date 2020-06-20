@@ -75,7 +75,7 @@ class Face_Detection_Model:
                     ymin=int(ymin*height)
                     xmax=int(xmax*width)
                     ymax=int(ymax*height)
-                    detections.append((xmin,ymin, xmax, ymax))
+                    detections.append([xmin,ymin, xmax, ymax])
                     cropped_image=image[ymin:ymax, xmin:xmax]
         except Exception as e:
             self.logger.error("Error While drawing bounding boxes on image in Face Detection Model"+str(e))
