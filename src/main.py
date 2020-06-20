@@ -1,6 +1,7 @@
 import cv2
 import os
 import logging
+import time
 from input_feeder import InputFeeder
 from mouse_controller import MouseController
 from face_detection_model import Face_Detection_Model
@@ -15,19 +16,23 @@ def build_argparser():
     return ArgumentParser object
     """
     parser=ArgumentParser()
-    parser.add_argument("-fd", "--faceDetectionModel", required=True, type=str,
-                       help="Specify path of xml file of face detection model")
+    parser.add_argument("-fd", "--faceDetectionModel", type=str,
+                       help="Specify path of xml file of face detection model",
+                       default="../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml")
     
-    parser.add_argument("-lr", "--landmarkRegressionModel", required=True, type=str,
-                       help="Specify path of xml file of landmark regression model")
+    parser.add_argument("-lr", "--landmarkRegressionModel", type=str,
+                       help="Specify path of xml file of landmark regression model",
+                        default="../intel/landmarks-regression-retail-0009/FP32-INT8/landmarks-regression-retail-0009.xml")
     
-    parser.add_argument("-hp", "--headPoseEstimationModel", required=True, type=str,
-                       help="Specify path of xml file of Head Pose Estimation model")
+    parser.add_argument("-hp", "--headPoseEstimationModel", type=str,
+                       help="Specify path of xml file of Head Pose Estimation model",
+                        default="../intel/head-pose-estimation-adas-0001/FP32-INT8/head-pose-estimation-adas-0001.xml")
     
-    parser.add_argument("-ge", "--gazeEstimationModel", required=True, type=str,
-                       help="Specify path of xml file of Gaze Estimation model")
+    parser.add_argument("-ge", "--gazeEstimationModel", type=str,
+                       help="Specify path of xml file of Gaze Estimation model",
+                        default="../intel/gaze-estimation-adas-0002/FP32-INT8/gaze-estimation-adas-0002.xml")
     
-    parser.add_argument("-i", "--input", required=True, type=str,
+    parser.add_argument("-i", "--input", type=str, default='../bin/demo.mp4',
                        help="Specify path of input Video file or cam for Webcam")
     
     parser.add_argument("-flags", "--previewFlags", required=False, nargs='+',
@@ -43,6 +48,7 @@ def build_argparser():
     parser.add_argument("-d", "--device", required=False, type=str, default='CPU',
                        help="Specify Device for inference"
                        "It can be CPU, GPU, FPGU, MYRID")
+    parser.add_argument("-o", '--output_path', default='/results', type=str)
     return parser
 
 
@@ -50,7 +56,7 @@ def main():
     
     args=build_argparser().parse_args()
     logger=logging.getLogger('main')
-    
+
     #initialize variables with the input arguments for easy access
     modelPathDict={
         'FaceDetectionModel':args.faceDetectionModel,
@@ -62,7 +68,8 @@ def main():
     input_filepath=args.input
     device_name=args.device
     prob_threshold=args.prob_threshold
-    
+    output_path = args.output_path
+
     if input_filepath.lower()=='cam':
         feeder=InputFeeder(input_type='cam')
     else:
@@ -76,23 +83,26 @@ def main():
             logger.error("Unable to find specified model file"+str(model_path))
             exit(1)
             
-    #load Models
+    # instantiate model
     face_detection_model=Face_Detection_Model(modelPathDict['FaceDetectionModel'], device_name)
     landmark_detection_model=Landmark_Detection_Model(modelPathDict['LandmarkRegressionModel'], device_name)
     head_pose_estimation_model=Head_Pose_Estimation_Model(modelPathDict['HeadPoseEstimationModel'], device_name)
     gaze_estimation_model=Gaze_Estimation_Model(modelPathDict['GazeEstimationModel'], device_name)     
     
     mouse_controller=MouseController('medium','fast')
-    
+
+    # load Models
+    start_model_load_time = time.time()
     face_detection_model.load_model()
     landmark_detection_model.load_model()
     head_pose_estimation_model.load_model()
     gaze_estimation_model.load_model()
+    total_model_load_time = time.time() - start_model_load_time
 
     feeder.load_data()
     
     frame_count=0
-    
+    start_inference_time = time.time()
     for ret, frame in feeder.next_batch():
         
         if not ret:
@@ -158,7 +168,20 @@ def main():
         
         if key==27:
             break
-            
+
+    total_time = time.time() - start_inference_time
+    total_inference_time = round(total_time, 1)
+    fps = frame_count / total_inference_time
+
+    with open(os.path.join(output_path, 'stats.txt'), 'w') as f:
+        f.write(str(total_inference_time) + '\n')
+        f.write(str(fps) + '\n')
+        f.write(str(total_model_load_time) + '\n')
+
+    logger.error('Model load time: '+str(total_model_load_time))
+    logger.error('Inference time: '+str(total_inference_time))
+    logger.error('FPS: '+str(fps))
+
     logger.error("Videostream ended")     
     cv2.destroyAllWindows()
     feeder.close()

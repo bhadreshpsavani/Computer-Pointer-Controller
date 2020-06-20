@@ -86,8 +86,6 @@ src: This folder has 4 model class files, This class files has methods to load m
 
 bin: this folder has `demo.mp4` file which can be used to test model
 
-### 
-
 ## Benchmarks
 *TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.
 
