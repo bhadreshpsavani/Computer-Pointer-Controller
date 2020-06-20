@@ -8,7 +8,7 @@ You will be using the InferenceEngine API from Intel's OpenVino ToolKit to build
 * The left eye image
 * The right eye image.
 
-![demoVideo](/src/output_video.mp4)
+![demoVideo](/bin/output_video.gif)
 
 To get these inputs, you will have to use three other OpenVino models:
 
