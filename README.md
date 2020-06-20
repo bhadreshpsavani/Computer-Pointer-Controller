@@ -18,13 +18,27 @@ To get these inputs, you will have to use three other OpenVino models:
 You will have to coordinate the flow of data from the input, and then amongst the different models and finally to the mouse controller. The flow of data will look like this:
 
 ![pipeline](/imgs/pipeline.png)
+
+### Project Structure:
+
+![project_structure](/imgs/project_structure.png)
+
 ## Project Set Up and Installation:
 
-Step1. Initialize OpenVino Environment Using `source /opt/intel/openvino/bin/setupvars.sh -pyver 3.5`
+Step1. Download **[OpenVino Toolkit 2020.1](https://docs.openvinotoolkit.org/latest/index.html)** with all the prerequisites by following this [installation guide](https://docs.openvinotoolkit.org/2020.1/_docs_install_guides_installing_openvino_windows.html)
 
+Step2. Clone the Repository using `git clone https://github.com/denilDG/Computer-Pointer-Controller.git`
 
-## Demo
-*TODO:* Explain how to run a basic demo of your model.
+Step3. Create Virtual Environment and install all the dependency using `pip install requirements.txt`
+
+Step4. Instantiate OpenVino Environment. For windows use below command
+```
+cd C:\Program Files (x86)\IntelSWTools\openvino\bin\
+setupvars.bat
+```
+
+## Demo:
+
 
 ## Documentation
 
