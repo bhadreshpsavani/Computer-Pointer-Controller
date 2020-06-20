@@ -3,7 +3,7 @@ import os
 import logging
 import time
 from input_feeder import InputFeeder
-#from mouse_controller import MouseController
+from mouse_controller import MouseController
 from face_detection_model import Face_Detection_Model
 from landmark_detection_model import Landmark_Detection_Model
 from head_pose_estimation_model import Head_Pose_Estimation_Model
@@ -57,7 +57,7 @@ def main():
     args=build_argparser().parse_args()
     logger=logging.getLogger('main')
     
-    is_benchmarking=True
+    is_benchmarking=False
     #initialize variables with the input arguments for easy access
     modelPathDict={
         'FaceDetectionModel':args.faceDetectionModel,
@@ -102,6 +102,9 @@ def main():
     total_model_load_time = time.time() - start_model_load_time
 
     feeder.load_data()
+
+    out_video = cv2.VideoWriter(os.path.join('output_video.mp4'), cv2.VideoWriter_fourcc(*'avc1'), feeder.get_fps(),
+                                (1920, 1080), True)
     
     frame_count=0
     start_inference_time = time.time()
@@ -109,7 +112,7 @@ def main():
         
         if not ret:
             break
-            
+
         frame_count+=1
         logger.error("frame_count"+str(frame_count))
         
@@ -148,9 +151,9 @@ def main():
                 cv2.putText(
                     previewFrame, 
                     "Pose Angles: yaw:{:.2f} | pitch:{:.2f} | roll:{:.2f}".format(pose_output[0], pose_output[1], pose_output[2]), 
-                    (10, 20), 
+                    (20, 40),
                     cv2.FONT_HERSHEY_COMPLEX, 
-                    0.30, (0, 255, 0), 1)
+                    1, (255, 0, 255), 2)
             if 'fg' in previewFlags:
                 x, y, w=int(gaze_vector[0]*12), int(gaze_vector[1]*12), 160
                 le=cv2.line(left_eye_image.copy(), (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
@@ -161,7 +164,7 @@ def main():
                 cropped_image[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]] = re
                 previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
             cv2.imshow('preview', cv2.resize(previewFrame, (500, 500)))
-                
+            out_video.write(previewFrame)
         
         logger.error("Mouse Cordinates:"+str(mouse_cord))
         

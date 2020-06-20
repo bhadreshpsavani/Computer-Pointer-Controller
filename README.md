@@ -8,6 +8,8 @@ You will be using the InferenceEngine API from Intel's OpenVino ToolKit to build
 * The left eye image
 * The right eye image.
 
+![demoVideo](/src/output_video.mp4)
+
 To get these inputs, you will have to use three other OpenVino models:
 
 * [Face Detection](https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_binary_0001_description_face_detection_adas_binary_0001.html)

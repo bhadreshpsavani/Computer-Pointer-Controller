@@ -47,3 +47,8 @@ class InputFeeder:
         if not self.input_type=='image':
             self.cap.release()
 
+    def get_fps(self):
+        '''
+        return FPS
+        '''
+        return int(self.cap.get(cv2.CAP_PROP_FPS))
