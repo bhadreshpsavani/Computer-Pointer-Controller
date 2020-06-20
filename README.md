@@ -19,28 +19,74 @@ You will have to coordinate the flow of data from the input, and then amongst th
 
 ![pipeline](/imgs/pipeline.png)
 
-### Project Structure:
-
-![project_structure](/imgs/project_structure.png)
-
 ## Project Set Up and Installation:
 
 Step1. Download **[OpenVino Toolkit 2020.1](https://docs.openvinotoolkit.org/latest/index.html)** with all the prerequisites by following this [installation guide](https://docs.openvinotoolkit.org/2020.1/_docs_install_guides_installing_openvino_windows.html)
 
 Step2. Clone the Repository using `git clone https://github.com/denilDG/Computer-Pointer-Controller.git`
 
-Step3. Create Virtual Environment and install all the dependency using `pip install requirements.txt`
+Step3. Create Virtual Environment using command `virtualenv venv` in the command prompt
 
-Step4. Instantiate OpenVino Environment. For windows use below command
+Step4. install all the dependency using `pip install requirements.txt`
+
+## Demo:
+
+Step1. Open command prompt Activate Virtual Environment 
+```
+cd venv/Scripts/
+activate
+```
+
+Step2. Instantiate OpenVino Environment. For windows use below command
 ```
 cd C:\Program Files (x86)\IntelSWTools\openvino\bin\
 setupvars.bat
 ```
 
-## Demo:
+Step3. Go back to the project directory `src` folder
+```
+cd path_of_project_directory
+cd src
+```
 
+Step4. Run below commands to execute the project
+```
+python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \ 
+-lr ../intel/landmarks-regression-retail-0009/FP32-INT8/landmarks-regression-retail-0009.xml \ 
+-hp ../intel/head-pose-estimation-adas-0001/FP32-INT8/head-pose-estimation-adas-0001.xml \ 
+-ge ../intel/gaze-estimation-adas-0002/FP32-INT8/gaze-estimation-adas-0002.xml \ 
+-i ../bin/demo.mp4 -flags ff fl fh fg
+```
+Command Line Argument Information:
+- fd : Specify path of xml file of face detection model
+- lr : Specify path of xml file of landmark regression model
+- hp : Specify path of xml file of Head Pose Estimation model
+- ge : Specify path of xml file of Gaze Estimation model
+- i : Specify path of input Video file or cam for Webcam
+- flags (Optional): if you want to see preview video in separate window you need to Specify flag from ff, fl, fh, fg like -flags ff fl...(Space seperated if multiple values) ff for faceDetectionModel, fl for landmarkRegressionModel, fh for headPoseEstimationModel, fg for gazeEstimationModel
+- probs (Optional): if you want to specify confidence threshold for face detection, you can specify the value here in range(0, 1),  default=0.6
+- d (Optional): Specify Device for inference, the device can be CPU, GPU, FPGU, MYRID
+ 
+## Documentation: 
 
-## Documentation
+### Project Structure:
+
+![project_structure](/imgs/project_structure.png)
+
+intel: This folder contains models in IR format downloaded from Openvino Model Zoo
+
+src: This folder has 4 model class files, This class files has methods to load model and perform inference.
+* `face_detection_model.py`
+* `gaze_estimation_model.py`
+* `landmark_detection_model.py`
+* `head_pose_estimation_model.py`
+* `main.py` file used to run complete pipeline of project. It calls has object of all the other class files in the folder
+* `mouse_controller.py` is utility to move mouse curser based on mouse coordinates received from  `gaze_estimation_model` class predict method.
+* `input_feeder.py` is utility to load local video or webcam feed
+
+bin: this folder has `demo.mp4` file which can be used to test model
+
+### 
 
 ## Benchmarks
 *TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.

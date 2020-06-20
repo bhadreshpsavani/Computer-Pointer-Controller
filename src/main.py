@@ -32,7 +32,7 @@ def build_argparser():
     
     parser.add_argument("-flags", "--previewFlags", required=False, nargs='+',
                         default=[],
-                       help="Specify flag from ff, fl, fh, fg like -flags f l(Space seperated if multiple values)"
+                       help="Specify flag from ff, fl, fh, fg like -flags ff fl(Space seperated if multiple values)"
                        "ff for faceDetectionModel, fl for landmarkRegressionModel"
                        "fh for headPoseEstimationModel, fg for gazeEstimationModel")
     
