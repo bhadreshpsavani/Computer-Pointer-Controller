@@ -8,12 +8,10 @@ LANDMARKDETECTIONMODEL=$2
 HEADPOSEESTIMATIONMODEL=$3
 GAZEESTIMATIONMODEL=$4
 DEVICE=$5
-VIDEO=$6
-OUTPUT=$7
-FLAGS=$8
-PROBABILITY=$9
+OUTPUT=$6
+VIDEO=$7
 
-mkdir -p $7
+mkdir -p $6
 
 if echo "$DEVICE" | grep -q "FPGA"; then # if device passed in is FPGA, load bitstream to program FPGA
     #Environment variables and compilation for edge compute nodes with FPGAs
@@ -25,15 +23,13 @@ if echo "$DEVICE" | grep -q "FPGA"; then # if device passed in is FPGA, load bit
     export CL_CONTEXT_COMPILER_MODE_INTELFPGA=3
 fi
 
-python main.py -fd ${FACEDETECTIONMODEL} \
+python3 main.py -fd ${FACEDETECTIONMODEL} \
               -lr ${LANDMARKDETECTIONMODEL} \
               -hp ${HEADPOSEESTIMATIONMODEL} \
               -ge ${GAZEESTIMATIONMODEL} \
               -d ${DEVICE} \
-              -i ${VIDEO} \
               -o ${OUTPUT} \
-              -flags ${FLAGS} \
-              -prob ${PROBABILITY} \
+              -i ${VIDEO}
 
 cd /output
 

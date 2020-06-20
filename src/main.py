@@ -3,7 +3,7 @@ import os
 import logging
 import time
 from input_feeder import InputFeeder
-from mouse_controller import MouseController
+#from mouse_controller import MouseController
 from face_detection_model import Face_Detection_Model
 from landmark_detection_model import Landmark_Detection_Model
 from head_pose_estimation_model import Head_Pose_Estimation_Model
@@ -56,7 +56,8 @@ def main():
     
     args=build_argparser().parse_args()
     logger=logging.getLogger('main')
-
+    
+    is_benchmarking=True
     #initialize variables with the input arguments for easy access
     modelPathDict={
         'FaceDetectionModel':args.faceDetectionModel,
@@ -89,7 +90,8 @@ def main():
     head_pose_estimation_model=Head_Pose_Estimation_Model(modelPathDict['HeadPoseEstimationModel'], device_name)
     gaze_estimation_model=Gaze_Estimation_Model(modelPathDict['GazeEstimationModel'], device_name)     
     
-    mouse_controller=MouseController('medium','fast')
+    if not is_benchmarking:
+        mouse_controller=MouseController('medium','fast')
 
     # load Models
     start_model_load_time = time.time()
@@ -133,7 +135,7 @@ def main():
             continue
 
         
-        if not len(previewFlags)==0:
+        if not len(previewFlags)==0 and not is_benchmarking:
             previewFrame=frame.copy()
             if 'ff' in previewFlags:
                 cv2.rectangle(previewFrame, (face_cords[0][0], face_cords[0][1]), (face_cords[0][2], face_cords[0][3]), (0,255,0), 3)
@@ -163,7 +165,7 @@ def main():
         
         logger.error("Mouse Cordinates:"+str(mouse_cord))
         
-        if frame_count%5==0:
+        if frame_count%5==0 and not is_benchmarking:
             mouse_controller.move(mouse_cord[0], mouse_cord[1])
         
         if key==27:
@@ -172,11 +174,12 @@ def main():
     total_time = time.time() - start_inference_time
     total_inference_time = round(total_time, 1)
     fps = frame_count / total_inference_time
-
-    with open(os.path.join(output_path, 'stats.txt'), 'w') as f:
-        f.write(str(total_inference_time) + '\n')
-        f.write(str(fps) + '\n')
-        f.write(str(total_model_load_time) + '\n')
+    
+    if is_benchmarking:
+        with open(os.path.join(output_path, 'stats.txt'), 'w') as f:
+            f.write(str(total_inference_time) + '\n')
+            f.write(str(fps) + '\n')
+            f.write(str(total_model_load_time) + '\n')
 
     logger.error('Model load time: '+str(total_model_load_time))
     logger.error('Inference time: '+str(total_inference_time))
