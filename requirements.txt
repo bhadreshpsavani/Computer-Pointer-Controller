@@ -4,6 +4,6 @@ ipython==7.10.2
 numpy==1.17.4
 Pillow==6.2.1
 requests==2.22.0
-virtualenv==16.7.9
+virtualenv==20.0.16
 opencv-python==4.1.0.25
 
