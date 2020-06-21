@@ -1,7 +1,4 @@
-from openvino.inference_engine import IECore, IENetwork
-import cv2
 import math
-import logging
 from model import Model
 
 
@@ -20,7 +17,7 @@ class GazeEstimationModel(Model):
         self.input_shape = self.model.inputs[self.input_name[1]].shape
         self.output_name = [o for o in self.model.outputs.keys()]
 
-    def predict(self, left_eye_image, right_eye_image, hpe_cords):
+    def predict(self, left_eye_image, right_eye_image, hpe_cords, request_id=0):
         """
         This method will take image as a input and
         does all the preprocessing, postprocessing
@@ -28,9 +25,12 @@ class GazeEstimationModel(Model):
         try:
             left_eye_image = self.preprocess_img(left_eye_image)
             right_eye_image = self.preprocess_img(right_eye_image)
-            outputs = self.network.infer(
-                {'left_eye_image': left_eye_image, 'right_eye_image': right_eye_image, 'head_pose_angles': hpe_cords})
-            mouse_cord, gaze_vector = self.preprocess_output(outputs, hpe_cords)
+            self.network.start_async(request_id, inputs={'left_eye_image': left_eye_image,
+                                                         'right_eye_image': right_eye_image,
+                                                         'head_pose_angles': hpe_cords})
+            if self.wait() == 0:
+                outputs = self.network.requests[0].outputs
+                mouse_cord, gaze_vector = self.preprocess_output(outputs, hpe_cords)
         except Exception as e:
             self.logger.error("Error While Prediction in Gaze Estimation Model" + str(e))
         return mouse_cord, gaze_vector

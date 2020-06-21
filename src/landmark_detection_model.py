@@ -16,7 +16,7 @@ class LandmarkDetectionModel(Model):
         self.input_shape = self.model.inputs[self.input_name].shape
         self.output_name = next(iter(self.model.outputs))
 
-    def predict(self, image):
+    def predict(self, image, request_id=0):
         """
         This method will take image as a input and
         does all the preprocessing, postprocessing
@@ -24,8 +24,10 @@ class LandmarkDetectionModel(Model):
         left_eye_image, right_eye_image, eye_cords = [], [], []
         try:
             p_image = self.preprocess_img(image)
-            outputs = self.network.infer({self.input_name: p_image})
-            left_eye_image, right_eye_image, eye_cords = self.preprocess_output(outputs, image)
+            self.network.start_async(request_id, inputs={self.input_name: p_image})
+            if self.wait() == 0:
+                outputs = self.network.requests[0].outputs[self.output_name]
+                left_eye_image, right_eye_image, eye_cords = self.preprocess_output(outputs, image)
         except Exception as e:
             self.logger.error("Error While making prediction in Landmark Detection Model" + str(e))
         return left_eye_image, right_eye_image, eye_cords
@@ -42,7 +44,7 @@ class LandmarkDetectionModel(Model):
         w = image.shape[1]
         left_eye_image, right_eye_image, eye_cords = [], [], []
         try:
-            outputs = outputs[self.output_name][0]
+            outputs = outputs[0]
 
             left_eye_xmin = int(outputs[0][0][0] * w) - 10
             left_eye_ymin = int(outputs[1][0][0] * h) - 10

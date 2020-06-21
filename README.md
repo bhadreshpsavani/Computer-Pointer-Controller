@@ -134,13 +134,14 @@ python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detec
 ```
 
 ### Inference Time:
-![inference_time](/imgs/inference_time.png)
+<img src="/imags/inference_time.png" width="425"/> <img src="/imags/inference_time_a.png" width="425"/> 
 
 ### Model Loading Time:
-![model_loading_time](/imgs/model_loading_time.png)
+<img src="/imgs/model_loading_time.png" width="425"/> <img src="/imgs/model_loading_time_a.png" width="425"/> 
 
 ### Frames Per Second:
-![fps](/imgs/fps.png)
+<img src="/imgs/fps.png" width="425"/> <img src="/imgs/fps_a.png" width="425"/>
+**Synchronous Inference**
 
 ```
 precisions = ['FP16', 'FP32', 'FP32-INT8']
@@ -149,9 +150,19 @@ fps : [2.218045112781955, 2.234848484848485, 2.193308550185874]
 Model Load Time : [1.6771371364593506, 1.6517729759216309, 5.205628395080566]
 ```
 
+**Asynchronous Inference**
+
+```
+precisions = ['FP16', 'FP32', 'FP32-INT8']
+Inference Time : [23.9, 24.7, 24.0]
+fps : [2.468619246861925, 2.388663967611336, 2.4583333333333335]
+Model Load Time : [0.7770581245422363, 0.7230548858642578, 2.766681432723999]
+```
+
 ## Results:
 * From above observations we can say that `FP16` has lowest model time and `FP32-INT8` has highest model loading time, the reason for the higher loading time can be said as combination of precisions lead to higher weight of the model for `FP32-INT8`.
 * For `Inference Time` and `FPS`, `FP32` give slightly better results. There is not much difference for this three different models for this two parameters.
+* I have tested model for Asynchronous Inference and Synchronous Inference, Asynchronous Inference has better results.
 
 ### Edge Cases
 * Multiple People Scenario: If we encounter multiple people in the video frame, it will always use and give results one face even though multiple people detected,  

@@ -18,16 +18,17 @@ class FaceDetectionModel(Model):
         self.output_name = next(iter(self.model.outputs))
         self.output_shape = self.model.outputs[self.output_name].shape
 
-    def predict(self, image):
+    def predict(self, image, request_id=0):
         """
         This method will take image as a input and
         does all the preprocessing, postprocessing
         """
         try:
             p_image = self.preprocess_img(image)
-            outputs = self.network.infer({self.input_name: p_image})
-            outputs = outputs['detection_out']
-            detections, cropped_image = self.preprocess_output(outputs, image)
+            self.network.start_async(request_id, inputs={self.input_name: p_image})
+            if self.wait() == 0:
+                outputs = self.network.requests[0].outputs[self.output_name]
+                detections, cropped_image = self.preprocess_output(outputs, image)
         except Exception as e:
             self.logger.error("Error While Prediction in Face Detection Model" + str(e))
         return detections, cropped_image

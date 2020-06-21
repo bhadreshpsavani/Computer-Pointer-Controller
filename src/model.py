@@ -55,3 +55,10 @@ class Model:
         except Exception as e:
             self.logger.error("Error While preprocessing Image in " + str(self.model_name) + str(e))
         return image
+
+    def wait(self):
+        '''
+        Checks the status of the inference request.
+        '''
+        status = self.network.requests[0].wait(-1)
+        return status
