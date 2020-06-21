@@ -5,10 +5,10 @@ import time
 import numpy as np
 from input_feeder import InputFeeder
 from mouse_controller import MouseController
-from face_detection_model import Face_Detection_Model
-from landmark_detection_model import Landmark_Detection_Model
-from head_pose_estimation_model import Head_Pose_Estimation_Model
-from gaze_estimation_model import Gaze_Estimation_Model
+from face_detection_model import FaceDetectionModel
+from landmark_detection_model import LandmarkDetectionModel
+from head_pose_estimation_model import HeadPoseEstimationModel
+from gaze_estimation_model import GazeEstimationModel
 from argparse import ArgumentParser
 
 
@@ -129,10 +129,10 @@ def main():
             exit(1)
 
     # instantiate model
-    face_detection_model = Face_Detection_Model(model_path_dict['FaceDetectionModel'], device_name)
-    landmark_detection_model = Landmark_Detection_Model(model_path_dict['LandmarkRegressionModel'], device_name)
-    head_pose_estimation_model = Head_Pose_Estimation_Model(model_path_dict['HeadPoseEstimationModel'], device_name)
-    gaze_estimation_model = Gaze_Estimation_Model(model_path_dict['GazeEstimationModel'], device_name)
+    face_detection_model = FaceDetectionModel(model_path_dict['FaceDetectionModel'], device_name, threshold=prob_threshold)
+    landmark_detection_model = LandmarkDetectionModel(model_path_dict['LandmarkRegressionModel'], device_name, threshold=prob_threshold)
+    head_pose_estimation_model = HeadPoseEstimationModel(model_path_dict['HeadPoseEstimationModel'], device_name, threshold=prob_threshold)
+    gaze_estimation_model = GazeEstimationModel(model_path_dict['GazeEstimationModel'], device_name, threshold=prob_threshold)
 
     if not is_benchmarking:
         mouse_controller = MouseController('medium', 'fast')
