@@ -10,88 +10,131 @@ from head_pose_estimation_model import Head_Pose_Estimation_Model
 from gaze_estimation_model import Gaze_Estimation_Model
 from argparse import ArgumentParser
 
+
 def build_argparser():
     """
     parse commandline argument
     return ArgumentParser object
     """
-    parser=ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument("-fd", "--faceDetectionModel", type=str,
-                       help="Specify path of xml file of face detection model",
-                       default="../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml")
-    
+                        help="Specify path of xml file of face detection model",
+                        default="../intel/face-detection-adas-binary-0001/FP32-INT1"
+                                "/face-detection-adas-binary-0001.xml")
+
     parser.add_argument("-lr", "--landmarkRegressionModel", type=str,
-                       help="Specify path of xml file of landmark regression model",
-                        default="../intel/landmarks-regression-retail-0009/FP32-INT8/landmarks-regression-retail-0009.xml")
-    
+                        help="Specify path of xml file of landmark regression model",
+                        default="../intel/landmarks-regression-retail-0009/FP32-INT8"
+                                "/landmarks-regression-retail-0009.xml")
+
     parser.add_argument("-hp", "--headPoseEstimationModel", type=str,
-                       help="Specify path of xml file of Head Pose Estimation model",
-                        default="../intel/head-pose-estimation-adas-0001/FP32-INT8/head-pose-estimation-adas-0001.xml")
-    
+                        help="Specify path of xml file of Head Pose Estimation model",
+                        default="../intel/head-pose-estimation-adas-0001/FP32-INT8"
+                                "/head-pose-estimation-adas-0001.xml")
+
     parser.add_argument("-ge", "--gazeEstimationModel", type=str,
-                       help="Specify path of xml file of Gaze Estimation model",
-                        default="../intel/gaze-estimation-adas-0002/FP32-INT8/gaze-estimation-adas-0002.xml")
-    
+                        help="Specify path of xml file of Gaze Estimation model",
+                        default="../intel/gaze-estimation-adas-0002/FP32-INT8"
+                                "/gaze-estimation-adas-0002.xml")
+
     parser.add_argument("-i", "--input", type=str, default='../bin/demo.mp4',
-                       help="Specify path of input Video file or cam for Webcam")
-    
+                        help="Specify path of input Video file or cam for webcam")
+
     parser.add_argument("-flags", "--previewFlags", required=False, nargs='+',
                         default=[],
-                       help="Specify flag from ff, fl, fh, fg like -flags ff fl(Space seperated if multiple values)"
-                       "ff for faceDetectionModel, fl for landmarkRegressionModel"
-                       "fh for headPoseEstimationModel, fg for gazeEstimationModel")
-    
+                        help="Specify flag from ff, fl, fh, fg like -flags ff fl(Space separated if multiple values)"
+                             "ff for faceDetectionModel, fl for landmarkRegressionModel"
+                             "fh for headPoseEstimationModel, fg for gazeEstimationModel")
+
     parser.add_argument("-prob", "--prob_threshold", required=False, type=float,
                         default=0.6,
-                       help="Specify probability threshold for face detection model")
-    
+                        help="Specify probability threshold for face detection model")
+
     parser.add_argument("-d", "--device", required=False, type=str, default='CPU',
-                       help="Specify Device for inference"
-                       "It can be CPU, GPU, FPGU, MYRID")
-    parser.add_argument("-o", '--output_path', default='/results', type=str)
+                        help="Specify Device for inference"
+                             "It can be CPU, GPU, FPGU, MYRID")
+    parser.add_argument("-o", '--output_path', default='/results/', type=str)
     return parser
 
 
+def draw_preview(
+        frame, preview_flags, cropped_image, left_eye_image, right_eye_image,
+        face_cords, eye_cords, pose_output, gaze_vector):
+    preview_frame = frame.copy()
+
+    if 'ff' in preview_flags:
+        cv2.rectangle(preview_frame, (face_cords[0][0], face_cords[0][1]), (face_cords[0][2], face_cords[0][3]),
+                      (0, 255, 0), 3)
+        preview_frame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]] = cropped_image
+
+    if 'fl' in preview_flags:
+        cv2.rectangle(cropped_image, (eye_cords[0][0], eye_cords[0][1]), (eye_cords[0][1], eye_cords[0][3]),
+                      (0, 255, 0), 3)
+        cv2.rectangle(cropped_image, (eye_cords[1][0], eye_cords[1][1]), (eye_cords[1][1], eye_cords[1][3]),
+                      (0, 255, 0), 3)
+        preview_frame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]] = cropped_image
+
+    if 'fh' in preview_flags:
+        cv2.putText(
+            preview_frame,
+            "Pose Angles: yaw:{:.2f} | pitch:{:.2f} | roll:{:.2f}".format(pose_output[0], pose_output[1],
+                                                                          pose_output[2]),
+            (20, 40),
+            cv2.FONT_HERSHEY_COMPLEX,
+            1, (255, 0, 255), 2)
+
+    if 'fg' in preview_flags:
+        x, y, w = int(gaze_vector[0] * 12), int(gaze_vector[1] * 12), 160
+        le = cv2.line(left_eye_image.copy(), (x - w, y - w), (x + w, y + w), (255, 0, 255), 2)
+        cv2.line(le, (x - w, y + w), (x + w, y - w), (255, 0, 255), 2)
+        re = cv2.line(right_eye_image.copy(), (x - w, y - w), (x + w, y + w), (255, 0, 255), 2)
+        cv2.line(re, (x - w, y + w), (x + w, y - w), (255, 0, 255), 2)
+        cropped_image[eye_cords[0][1]:eye_cords[0][3], eye_cords[0][0]:eye_cords[0][2]] = le
+        cropped_image[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]] = re
+        preview_frame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]] = cropped_image
+
+    return preview_frame
+
+
 def main():
-    
-    args=build_argparser().parse_args()
-    logger=logging.getLogger('main')
-    
-    is_benchmarking=False
-    #initialize variables with the input arguments for easy access
-    modelPathDict={
-        'FaceDetectionModel':args.faceDetectionModel,
-        'LandmarkRegressionModel':args.landmarkRegressionModel,
-        'HeadPoseEstimationModel':args.headPoseEstimationModel,
-        'GazeEstimationModel':args.gazeEstimationModel
+    args = build_argparser().parse_args()
+    logger = logging.getLogger('main')
+
+    is_benchmarking = False
+    # initialize variables with the input arguments for easy access
+    model_path_dict = {
+        'FaceDetectionModel': args.faceDetectionModel,
+        'LandmarkRegressionModel': args.landmarkRegressionModel,
+        'HeadPoseEstimationModel': args.headPoseEstimationModel,
+        'GazeEstimationModel': args.gazeEstimationModel
     }
-    previewFlags=args.previewFlags
-    input_filepath=args.input
-    device_name=args.device
-    prob_threshold=args.prob_threshold
+    preview_flags = args.previewFlags
+    input_filename = args.input
+    device_name = args.device
+    prob_threshold = args.prob_threshold
     output_path = args.output_path
 
-    if input_filepath.lower()=='cam':
-        feeder=InputFeeder(input_type='cam')
+    if input_filename.lower() == 'cam':
+        feeder = InputFeeder(input_type='cam')
     else:
-        if not os.path.isfile(input_filepath):
+        if not os.path.isfile(input_filename):
             logger.error("Unable to find specified video file")
             exit(1)
-        feeder=InputFeeder(input_type='video', input_file=input_filepath)
-    
-    for model_path in list(modelPathDict.values()):
+        feeder = InputFeeder(input_type='video', input_file=input_filename)
+
+    for model_path in list(model_path_dict.values()):
         if not os.path.isfile(model_path):
-            logger.error("Unable to find specified model file"+str(model_path))
+            logger.error("Unable to find specified model file" + str(model_path))
             exit(1)
-            
+
     # instantiate model
-    face_detection_model=Face_Detection_Model(modelPathDict['FaceDetectionModel'], device_name)
-    landmark_detection_model=Landmark_Detection_Model(modelPathDict['LandmarkRegressionModel'], device_name)
-    head_pose_estimation_model=Head_Pose_Estimation_Model(modelPathDict['HeadPoseEstimationModel'], device_name)
-    gaze_estimation_model=Gaze_Estimation_Model(modelPathDict['GazeEstimationModel'], device_name)     
-    
+    face_detection_model = Face_Detection_Model(model_path_dict['FaceDetectionModel'], device_name)
+    landmark_detection_model = Landmark_Detection_Model(model_path_dict['LandmarkRegressionModel'], device_name)
+    head_pose_estimation_model = Head_Pose_Estimation_Model(model_path_dict['HeadPoseEstimationModel'], device_name)
+    gaze_estimation_model = Gaze_Estimation_Model(model_path_dict['GazeEstimationModel'], device_name)
+
     if not is_benchmarking:
-        mouse_controller=MouseController('medium','fast')
+        mouse_controller = MouseController('medium', 'fast')
 
     # load Models
     start_model_load_time = time.time()
@@ -105,92 +148,72 @@ def main():
 
     out_video = cv2.VideoWriter(os.path.join('output_video.mp4'), cv2.VideoWriter_fourcc(*'avc1'), feeder.get_fps(),
                                 (1920, 1080), True)
-    
-    frame_count=0
+
+    frame_count = 0
     start_inference_time = time.time()
     for ret, frame in feeder.next_batch():
-        
+
         if not ret:
             break
 
-        frame_count+=1
-        logger.error("frame_count"+str(frame_count))
-        
-        if frame_count%5==0:
+        frame_count += 1
+
+        if frame_count % 5 == 0:
             cv2.imshow('video', cv2.resize(frame, (500, 500)))
-            
-        key=cv2.waitKey(60)
+
+        key = cv2.waitKey(60)
 
         try:
-            face_cords, cropped_image=face_detection_model.predict(frame)
+            face_cords, cropped_image = face_detection_model.predict(frame)
 
-            if type(cropped_image)==int:
+            if type(cropped_image) == int:
                 logger.error("Unable to detect the face")
-                if key==27:
+                if key == 27:
                     break
                 continue
 
-            left_eye_image, right_eye_image, eye_cords=landmark_detection_model.predict(cropped_image)
-            pose_output=head_pose_estimation_model.predict(cropped_image)
-            mouse_cord, gaze_vector=gaze_estimation_model.predict(left_eye_image, right_eye_image, pose_output)
+            left_eye_image, right_eye_image, eye_cords = landmark_detection_model.predict(cropped_image)
+            pose_output = head_pose_estimation_model.predict(cropped_image)
+            mouse_cord, gaze_vector = gaze_estimation_model.predict(left_eye_image, right_eye_image, pose_output)
         except Exception as e:
-            logger.error("Could predict using model"+str(e))
+            logger.error("Could predict using model" + str(e))
             continue
 
-        
-        if not len(previewFlags)==0 and not is_benchmarking:
-            previewFrame=frame.copy()
-            if 'ff' in previewFlags:
-                cv2.rectangle(previewFrame, (face_cords[0][0], face_cords[0][1]), (face_cords[0][2], face_cords[0][3]), (0,255,0), 3)
-                previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
-            if 'fl' in previewFlags:
-                cv2.rectangle(cropped_image, (eye_cords[0][0], eye_cords[0][1]), (eye_cords[0][1], eye_cords[0][3]), (0,255,0), 3)
-                cv2.rectangle(cropped_image, (eye_cords[1][0], eye_cords[1][1]), (eye_cords[1][1], eye_cords[1][3]), (0,255,0), 3)
-                previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
-            if 'fh' in previewFlags:
-                cv2.putText(
-                    previewFrame, 
-                    "Pose Angles: yaw:{:.2f} | pitch:{:.2f} | roll:{:.2f}".format(pose_output[0], pose_output[1], pose_output[2]), 
-                    (20, 40),
-                    cv2.FONT_HERSHEY_COMPLEX, 
-                    1, (255, 0, 255), 2)
-            if 'fg' in previewFlags:
-                x, y, w=int(gaze_vector[0]*12), int(gaze_vector[1]*12), 160
-                le=cv2.line(left_eye_image.copy(), (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
-                cv2.line(le, (x-w, y+w), (x+w, y-w), (255, 0, 255), 2)
-                re=cv2.line(right_eye_image.copy(), (x-w, y-w), (x+w, y+w), (255, 0, 255), 2)
-                cv2.line(re, (x-w, y+w), (x+w, y-w), (255, 0, 255), 2)
-                cropped_image[eye_cords[0][1]:eye_cords[0][3], eye_cords[0][0]:eye_cords[0][2]] = le
-                cropped_image[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]] = re
-                previewFrame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]]=cropped_image
-            cv2.imshow('preview', cv2.resize(previewFrame, (500, 500)))
-            out_video.write(previewFrame)
-        
-        logger.error("Mouse Cordinates:"+str(mouse_cord))
-        
-        if frame_count%5==0 and not is_benchmarking:
+        if not len(preview_flags) == 0:
+            preview_frame = draw_preview(
+                frame, preview_flags, cropped_image, left_eye_image, right_eye_image,
+                face_cords, eye_cords, pose_output, gaze_vector)
+            cv2.imshow('preview', cv2.resize(preview_frame, (500, 500)))
+            out_video.write(preview_frame)
+
+        if frame_count % 5 == 0 and not is_benchmarking:
             mouse_controller.move(mouse_cord[0], mouse_cord[1])
-        
-        if key==27:
+
+        if key == 27:
             break
 
     total_time = time.time() - start_inference_time
     total_inference_time = round(total_time, 1)
     fps = frame_count / total_inference_time
-    
-    if is_benchmarking:
-        with open(os.path.join(output_path, 'stats.txt'), 'w') as f:
-            f.write(str(total_inference_time) + '\n')
-            f.write(str(fps) + '\n')
-            f.write(str(total_model_load_time) + '\n')
 
-    logger.error('Model load time: '+str(total_model_load_time))
-    logger.error('Inference time: '+str(total_inference_time))
-    logger.error('FPS: '+str(fps))
+    try:
+        os.mkdir(output_path)
+    except OSError as error:
+        logger.error(error)
 
-    logger.error("Videostream ended")     
+    with open(output_path+'stats.txt', 'w') as f:
+        f.write(str(total_inference_time) + '\n')
+        f.write(str(fps) + '\n')
+        f.write(str(total_model_load_time) + '\n')
+
+    logger.error('Model load time: ' + str(total_model_load_time))
+    logger.error('Inference time: ' + str(total_inference_time))
+    logger.error('FPS: ' + str(fps))
+
+    logger.error('Video stream ended')
     cv2.destroyAllWindows()
     feeder.close()
-    
-if __name__=='__main__':
+
+
+if __name__ == '__main__':
     main()
