@@ -165,7 +165,7 @@ def main():
             face_cords, cropped_image = face_detection_model.predict(frame)
 
             if type(cropped_image) == int:
-                logger.error("Unable to detect the face")
+                logger.warning("Unable to detect the face")
                 if key == 27:
                     break
                 continue
@@ -175,7 +175,7 @@ def main():
             mouse_cord, gaze_vector = gaze_estimation_model.predict(left_eye_image, right_eye_image, pose_output)
 
         except Exception as e:
-            logger.error("Could predict using model" + str(e))
+            logger.warning("Could predict using model" + str(e) + " for frame " + str(frame_count))
             continue
 
         image = cv2.resize(frame, (500, 500))
