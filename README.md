@@ -88,7 +88,9 @@ Command Line Argument Information:
 
 intel: This folder contains models in IR format downloaded from Openvino Model Zoo
 
-src: This folder has 4 model class files, This class files has methods to load model and perform inference.
+src: This folder contains model files, pipeline file(main.py) and utilities 
+* `model.py` is the model class file which has common property of all the other model files. It is inherited by all the other model files 
+This folder has 4 model class files, This class files has methods to load model and perform inference.
 * `face_detection_model.py`
 * `gaze_estimation_model.py`
 * `landmark_detection_model.py`
