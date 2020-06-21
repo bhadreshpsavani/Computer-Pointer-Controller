@@ -146,7 +146,7 @@ fps : [2.218045112781955, 2.234848484848485, 2.193308550185874]
 Model Load Time : [1.6771371364593506, 1.6517729759216309, 5.205628395080566]
 ```
 
-Note: I have not perform inference on different hardware because locally i don't have GPU, NCS2.  I also tried using Workspace of project2 but it was not the job was not taking my custom model path and input video path 
+Note: I have not perform inference on different hardware because locally i don't have GPU, NCS2.  I also tried using Workspace of project2 but the job was not taking my custom model path and input video path 
 
 ## Results:
 * From above observations we can say that `FP16` has lowest model time and `FP32-INT8` has highest model loading time, the reason for the higher loading time can be said as combination of precisions lead to higher weight of the model for `FP32-INT8`.
