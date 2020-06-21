@@ -134,7 +134,7 @@ python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detec
 ```
 
 ### Inference Time:
-<img src="/imags/inference_time.png" width="425"/> <img src="/imags/inference_time_a.png" width="425"/> 
+<img src="/imgs/inference_time.png" width="425"/> <img src="/imgs/inference_time_a.png" width="425"/> 
 
 ### Model Loading Time:
 <img src="/imgs/model_loading_time.png" width="425"/> <img src="/imgs/model_loading_time_a.png" width="425"/> 
