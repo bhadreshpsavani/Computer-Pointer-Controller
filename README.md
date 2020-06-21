@@ -29,7 +29,17 @@ Step2. Clone the Repository using `git clone https://github.com/denilDG/Computer
 
 Step3. Create Virtual Environment using command `virtualenv venv` in the command prompt
 
-Step4. install all the dependency using `pip install requirements.txt`
+Step4. install all the dependency using `pip install requirements.txt`.
+
+Step5: Download model from `OpenVino Zoo` using below four commands, This commands will download four required model with all the precisions available in the default output location.
+
+```
+python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name gaze-estimation-adas-0002 
+python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name face-detection-adas-binary-0001  
+python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name head-pose-estimation-adas-0001  
+python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name landmarks-regression-retail-0009
+```
+
 
 ## Demo:
 
@@ -89,16 +99,60 @@ src: This folder has 4 model class files, This class files has methods to load m
 bin: this folder has `demo.mp4` file which can be used to test model
 
 ## Benchmarks
-*TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.
+I have checked `Inference Time`, `Model Loading Time`, and `Frames Per Second` model for `FP16`, `FP32`, and `FP32-INT8` of all the models except `Face Detection Model`. `Face Detection Model` was only available on `FP32-INT1` precision. 
+You can use below commands to get results for respective precisions,
 
-## Results
-*TODO:* Discuss the benchmark results and explain why you are getting the results you are getting. For instance, explain why there is difference in inference time for FP32, FP16 and INT8 models.
+`FP16`: 
+```
+python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \ 
+-lr ../intel/landmarks-regression-retail-0009/FP16/landmarks-regression-retail-0009.xml \ 
+-hp ../intel/head-pose-estimation-adas-0001/FP16/head-pose-estimation-adas-0001.xml \ 
+-ge ../intel/gaze-estimation-adas-0002/FP16/gaze-estimation-adas-0002.xml \ 
+-d CPU -i ../bin/demo.mp4 -o results/FP16/ -flags ff fl fh fg
+```
 
-## Stand Out Suggestions
-This is where you can provide information about the stand out suggestions that you have attempted.
+`FP32`: 
+```
+python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \ 
+-lr ../intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml \ 
+-hp ../intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml \ 
+-ge ../intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml \ 
+-d CPU -i ../bin/demo.mp4 -o results/FP32/ -flags ff fl fh fg
+```
 
-### Async Inference
-If you have used Async Inference in your code, benchmark the results and explain its effects on power and performance of your project.
+`FP32-INT8`: 
+```
+python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \ 
+-lr ../intel/landmarks-regression-retail-0009/FP32-INT8/landmarks-regression-retail-0009.xml \ 
+-hp ../intel/head-pose-estimation-adas-0001/FP32-INT8/head-pose-estimation-adas-0001.xml \ 
+-ge ../intel/gaze-estimation-adas-0002/FP32-INT8/gaze-estimation-adas-0002.xml \ 
+-d CPU -i ../bin/demo.mp4 -o results/FP32-INT8/ -flags ff fl fh fg
+```
+
+### Inference Time:
+[inference_time](/imgs/inference_time.png)
+
+### Model Loading Time:
+[model_loading_time](/imgs/model_loading_time.png)
+
+### Frames Per Second:
+[fps](/imgs/fps.png)
+
+```
+precisions = ['FP16', 'FP32', 'FP32-INT8']
+Inference Time : [26.6, 26.4, 26.9]
+fps : [2.218045112781955, 2.234848484848485, 2.193308550185874]
+Model Load Time : [1.6771371364593506, 1.6517729759216309, 5.205628395080566]
+```
+
+Note: I have not perform inference on different hardware because locally i don't have GPU, NCS2.  I also tried using Workspace of project2 but it was not the job was not taking my custom model path and input video path 
+
+## Results:
+* From above observations we can say that `FP16` has lowest model time and `FP32-INT8` has highest model loading time, the reason for the higher loading time can be said as combination of precisions lead to higher weight of the model for `FP32-INT8`.
+* For `Inference Time` and `FPS`, `FP32` give slightly better results. There is not much difference for this three different models
 
 ### Edge Cases
-There will be certain situations that will break your inference flow. For instance, lighting changes or multiple people in the frame. Explain some of the edge cases you encountered in your project and how you solved them to make your project more robust.
+* Multiple People Scenario: If we encounter multiple people in the video frame, it will always use and give results one face even though multiple people detected,  
+
+### Area of Improvement:
+* lighting condition: We might use HSV based pre-processing steps to minimize error due to different lighting conditions 

@@ -2,6 +2,7 @@ import cv2
 import os
 import logging
 import time
+import numpy as np
 from input_feeder import InputFeeder
 from mouse_controller import MouseController
 from face_detection_model import Face_Detection_Model
@@ -63,35 +64,43 @@ def draw_preview(
     preview_frame = frame.copy()
 
     if 'ff' in preview_flags:
-        cv2.rectangle(preview_frame, (face_cords[0][0], face_cords[0][1]), (face_cords[0][2], face_cords[0][3]),
-                      (0, 255, 0), 3)
-        preview_frame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]] = cropped_image
+        if len(preview_flags) != 1:
+            preview_frame = cropped_image
+        cv2.rectangle(frame, (face_cords[0][0], face_cords[0][1]), (face_cords[0][2], face_cords[0][3]),
+                      (0, 0, 0), 3)
 
     if 'fl' in preview_flags:
-        cv2.rectangle(cropped_image, (eye_cords[0][0], eye_cords[0][1]), (eye_cords[0][1], eye_cords[0][3]),
-                      (0, 255, 0), 3)
-        cv2.rectangle(cropped_image, (eye_cords[1][0], eye_cords[1][1]), (eye_cords[1][1], eye_cords[1][3]),
-                      (0, 255, 0), 3)
-        preview_frame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]] = cropped_image
+        cv2.rectangle(cropped_image, (eye_cords[0][0], eye_cords[0][1]), (eye_cords[0][2], eye_cords[0][3]),
+                      (255, 0, 0), 1)
+        cv2.rectangle(cropped_image, (eye_cords[1][0], eye_cords[1][1]), (eye_cords[1][2], eye_cords[1][3]),
+                      (255, 0, 0), 1)
 
     if 'fh' in preview_flags:
         cv2.putText(
-            preview_frame,
-            "Pose Angles: yaw:{:.2f} | pitch:{:.2f} | roll:{:.2f}".format(pose_output[0], pose_output[1],
-                                                                          pose_output[2]),
+            frame,
+            "Pose Angles: yaw= {:.2f} , pitch= {:.2f} , roll= {:.2f}".format(
+                pose_output[0], pose_output[1], pose_output[2]),
             (20, 40),
             cv2.FONT_HERSHEY_COMPLEX,
-            1, (255, 0, 255), 2)
+            1, (0, 0, 0), 2)
 
     if 'fg' in preview_flags:
+
+        cv2.putText(
+            frame,
+            "Gaze Cords: x= {:.2f} , y= {:.2f} , z= {:.2f}".format(
+                gaze_vector[0], gaze_vector[1], gaze_vector[2]),
+            (20, 80),
+            cv2.FONT_HERSHEY_COMPLEX,
+            1, (0, 0, 0), 2)
+
         x, y, w = int(gaze_vector[0] * 12), int(gaze_vector[1] * 12), 160
         le = cv2.line(left_eye_image.copy(), (x - w, y - w), (x + w, y + w), (255, 0, 255), 2)
         cv2.line(le, (x - w, y + w), (x + w, y - w), (255, 0, 255), 2)
         re = cv2.line(right_eye_image.copy(), (x - w, y - w), (x + w, y + w), (255, 0, 255), 2)
         cv2.line(re, (x - w, y + w), (x + w, y - w), (255, 0, 255), 2)
-        cropped_image[eye_cords[0][1]:eye_cords[0][3], eye_cords[0][0]:eye_cords[0][2]] = le
-        cropped_image[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]] = re
-        preview_frame[face_cords[0][1]:face_cords[0][3], face_cords[0][0]:face_cords[0][2]] = cropped_image
+        preview_frame[eye_cords[0][1]:eye_cords[0][3], eye_cords[0][0]:eye_cords[0][2]] = le
+        preview_frame[eye_cords[1][1]:eye_cords[1][3], eye_cords[1][0]:eye_cords[1][2]] = re
 
     return preview_frame
 
@@ -158,9 +167,6 @@ def main():
 
         frame_count += 1
 
-        if frame_count % 5 == 0:
-            cv2.imshow('video', cv2.resize(frame, (500, 500)))
-
         key = cv2.waitKey(60)
 
         try:
@@ -175,16 +181,21 @@ def main():
             left_eye_image, right_eye_image, eye_cords = landmark_detection_model.predict(cropped_image)
             pose_output = head_pose_estimation_model.predict(cropped_image)
             mouse_cord, gaze_vector = gaze_estimation_model.predict(left_eye_image, right_eye_image, pose_output)
+
         except Exception as e:
             logger.error("Could predict using model" + str(e))
             continue
+
+        image = cv2.resize(frame, (500, 500))
 
         if not len(preview_flags) == 0:
             preview_frame = draw_preview(
                 frame, preview_flags, cropped_image, left_eye_image, right_eye_image,
                 face_cords, eye_cords, pose_output, gaze_vector)
-            cv2.imshow('preview', cv2.resize(preview_frame, (500, 500)))
-            out_video.write(preview_frame)
+            image = np.hstack((cv2.resize(frame, (500, 500)), cv2.resize(preview_frame, (500, 500))))
+
+        cv2.imshow('preview', image)
+        out_video.write(frame)
 
         if frame_count % 5 == 0 and not is_benchmarking:
             mouse_controller.move(mouse_cord[0], mouse_cord[1])
