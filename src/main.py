@@ -18,27 +18,19 @@ def build_argparser():
     return ArgumentParser object
     """
     parser = ArgumentParser()
-    parser.add_argument("-fd", "--faceDetectionModel", type=str,
-                        help="Specify path of xml file of face detection model",
-                        default="../intel/face-detection-adas-binary-0001/FP32-INT1"
-                                "/face-detection-adas-binary-0001.xml")
+    parser.add_argument("-fd", "--faceDetectionModel", type=str, required=True,
+                        help="Specify path of xml file of face detection model")
 
-    parser.add_argument("-lr", "--landmarkRegressionModel", type=str,
-                        help="Specify path of xml file of landmark regression model",
-                        default="../intel/landmarks-regression-retail-0009/FP32-INT8"
-                                "/landmarks-regression-retail-0009.xml")
+    parser.add_argument("-lr", "--landmarkRegressionModel", type=str, required=True,
+                        help="Specify path of xml file of landmark regression model")
 
-    parser.add_argument("-hp", "--headPoseEstimationModel", type=str,
-                        help="Specify path of xml file of Head Pose Estimation model",
-                        default="../intel/head-pose-estimation-adas-0001/FP32-INT8"
-                                "/head-pose-estimation-adas-0001.xml")
+    parser.add_argument("-hp", "--headPoseEstimationModel", type=str, required=True,
+                        help="Specify path of xml file of Head Pose Estimation model")
 
-    parser.add_argument("-ge", "--gazeEstimationModel", type=str,
-                        help="Specify path of xml file of Gaze Estimation model",
-                        default="../intel/gaze-estimation-adas-0002/FP32-INT8"
-                                "/gaze-estimation-adas-0002.xml")
+    parser.add_argument("-ge", "--gazeEstimationModel", type=str, required=True,
+                        help="Specify path of xml file of Gaze Estimation model")
 
-    parser.add_argument("-i", "--input", type=str, default='../bin/demo.mp4',
+    parser.add_argument("-i", "--input", type=str, required=True,
                         help="Specify path of input Video file or cam for webcam")
 
     parser.add_argument("-flags", "--previewFlags", required=False, nargs='+',

@@ -78,6 +78,7 @@ Command Line Argument Information:
 - flags (Optional): if you want to see preview video in separate window you need to Specify flag from ff, fl, fh, fg like -flags ff fl...(Space seperated if multiple values) ff for faceDetectionModel, fl for landmarkRegressionModel, fh for headPoseEstimationModel, fg for gazeEstimationModel
 - probs (Optional): if you want to specify confidence threshold for face detection, you can specify the value here in range(0, 1),  default=0.6
 - d (Optional): Specify Device for inference, the device can be CPU, GPU, FPGU, MYRID
+- o : Specify path of output folder where we will store results
  
 ## Documentation: 
 
@@ -130,13 +131,13 @@ python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detec
 ```
 
 ### Inference Time:
-[inference_time](/imgs/inference_time.png)
+![inference_time](/imgs/inference_time.png)
 
 ### Model Loading Time:
-[model_loading_time](/imgs/model_loading_time.png)
+![model_loading_time](/imgs/model_loading_time.png)
 
 ### Frames Per Second:
-[fps](/imgs/fps.png)
+![fps](/imgs/fps.png)
 
 ```
 precisions = ['FP16', 'FP32', 'FP32-INT8']
@@ -149,10 +150,11 @@ Note: I have not perform inference on different hardware because locally i don't
 
 ## Results:
 * From above observations we can say that `FP16` has lowest model time and `FP32-INT8` has highest model loading time, the reason for the higher loading time can be said as combination of precisions lead to higher weight of the model for `FP32-INT8`.
-* For `Inference Time` and `FPS`, `FP32` give slightly better results. There is not much difference for this three different models
+* For `Inference Time` and `FPS`, `FP32` give slightly better results. There is not much difference for this three different models for this two parameters.
 
 ### Edge Cases
 * Multiple People Scenario: If we encounter multiple people in the video frame, it will always use and give results one face even though multiple people detected,  
+* No Head Detection: it will skip the frame and inform the user
 
 ### Area of Improvement:
 * lighting condition: We might use HSV based pre-processing steps to minimize error due to different lighting conditions 
