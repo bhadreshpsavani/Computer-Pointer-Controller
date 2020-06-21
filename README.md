@@ -25,7 +25,7 @@ You will have to coordinate the flow of data from the input, and then amongst th
 
 Step1. Download **[OpenVino Toolkit 2020.1](https://docs.openvinotoolkit.org/latest/index.html)** with all the prerequisites by following this [installation guide](https://docs.openvinotoolkit.org/2020.1/_docs_install_guides_installing_openvino_windows.html)
 
-Step2. Clone the Repository using `git clone https://github.com/denilDG/Computer-Pointer-Controller.git`
+Step2. Clone the Repository using `git clone https://github.com/bhadreshpsavani/Computer-Pointer-Controller.git`
 
 Step3. Create Virtual Environment using command `virtualenv venv` in the command prompt
 

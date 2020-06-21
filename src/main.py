@@ -62,10 +62,10 @@ def draw_preview(
                       (0, 0, 0), 3)
 
     if 'fl' in preview_flags:
-        cv2.rectangle(cropped_image, (eye_cords[0][0], eye_cords[0][1]), (eye_cords[0][2], eye_cords[0][3]),
-                      (255, 0, 0), 1)
-        cv2.rectangle(cropped_image, (eye_cords[1][0], eye_cords[1][1]), (eye_cords[1][2], eye_cords[1][3]),
-                      (255, 0, 0), 1)
+        cv2.rectangle(cropped_image, (eye_cords[0][0]-10, eye_cords[0][1]-10), (eye_cords[0][2]+10, eye_cords[0][3]+10),
+                      (255, 0, 0), 2)
+        cv2.rectangle(cropped_image, (eye_cords[1][0]-10, eye_cords[1][1]-10), (eye_cords[1][2]+10, eye_cords[1][3]+10),
+                      (255, 0, 0), 2)
 
     if 'fh' in preview_flags:
         cv2.putText(
@@ -147,7 +147,7 @@ def main():
 
     feeder.load_data()
 
-    out_video = cv2.VideoWriter(os.path.join('output_video.mp4'), cv2.VideoWriter_fourcc(*'avc1'), feeder.get_fps(),
+    out_video = cv2.VideoWriter(os.path.join('output_video.mp4'), cv2.VideoWriter_fourcc(*'avc1'), int(feeder.get_fps()/10),
                                 (1920, 1080), True)
 
     frame_count = 0
@@ -209,11 +209,11 @@ def main():
         f.write(str(fps) + '\n')
         f.write(str(total_model_load_time) + '\n')
 
-    logger.error('Model load time: ' + str(total_model_load_time))
-    logger.error('Inference time: ' + str(total_inference_time))
-    logger.error('FPS: ' + str(fps))
+    logger.info('Model load time: ' + str(total_model_load_time))
+    logger.info('Inference time: ' + str(total_inference_time))
+    logger.info('FPS: ' + str(fps))
 
-    logger.error('Video stream ended')
+    logger.info('Video stream ended')
     cv2.destroyAllWindows()
     feeder.close()
 
