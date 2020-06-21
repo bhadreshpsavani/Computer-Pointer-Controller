@@ -162,7 +162,7 @@ Model Load Time : [0.7770581245422363, 0.7230548858642578, 2.766681432723999]
 ## Results:
 * From above observations we can say that `FP16` has lowest model time and `FP32-INT8` has highest model loading time, the reason for the higher loading time can be said as combination of precisions lead to higher weight of the model for `FP32-INT8`.
 * For `Inference Time` and `FPS`, `FP32` give slightly better results. There is not much difference for this three different models for this two parameters.
-* I have tested model for Asynchronous Inference and Synchronous Inference, Asynchronous Inference has better results.
+* I have tested model for Asynchronous Inference and Synchronous Inference, Asynchronous Inference has better results it has slight improvement in `inference time` and `FPS`
 
 ### Edge Cases
 * Multiple People Scenario: If we encounter multiple people in the video frame, it will always use and give results one face even though multiple people detected,  
