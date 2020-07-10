@@ -141,6 +141,7 @@ python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detec
 
 ### Frames Per Second:
 <img src="/imgs/fps.png" width="425"/> <img src="/imgs/fps_a.png" width="425"/>
+
 **Synchronous Inference**
 
 ```
