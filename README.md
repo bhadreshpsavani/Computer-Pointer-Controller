@@ -23,45 +23,60 @@ You will have to coordinate the flow of data from the input, and then amongst th
 
 ## Project Set Up and Installation:
 
-Step1. Download **[OpenVino Toolkit 2020.1](https://docs.openvinotoolkit.org/latest/index.html)** with all the prerequisites by following this [installation guide](https://docs.openvinotoolkit.org/2020.1/_docs_install_guides_installing_openvino_windows.html)
+Step1: Download below three softwares:
+1. Microsoft Visual Studio* with C++ 2019, 2017, or 2015 with MSBuild
+2. CMake 3.4 or higher 64-bit
+NOTE: If you want to use Microsoft Visual Studio 2019, you are required to install CMake 3.14.
+3. Python 3.6.5 64-bit
 
-Step2. Clone the Repository using `git clone https://github.com/bhadreshpsavani/Computer-Pointer-Controller.git`
+Step2. Download **[OpenVino Toolkit 2020.1](https://docs.openvinotoolkit.org/latest/index.html)** with all the prerequisites by following this [installation guide](https://docs.openvinotoolkit.org/2020.1/_docs_install_guides_installing_openvino_windows.html)
 
-Step3. Create Virtual Environment using command `virtualenv venv` in the command prompt
-
-Step4. install all the dependency using `pip install requirements.txt`.
-
-Step5: Download model from `OpenVino Zoo` using below four commands, This commands will download four required model with all the precisions available in the default output location.
-
-```
-python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name gaze-estimation-adas-0002 
-python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name face-detection-adas-binary-0001  
-python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name head-pose-estimation-adas-0001  
-python3 /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name landmarks-regression-retail-0009
-```
-
-
-## Demo:
-
-Step1. Open command prompt Activate Virtual Environment 
-```
-cd venv/Scripts/
-activate
-```
-
-Step2. Instantiate OpenVino Environment. For windows use below command
+Step3: Setup OpenVino Toolkit using below command in command prompt
 ```
 cd C:\Program Files (x86)\IntelSWTools\openvino\bin\
 setupvars.bat
 ```
 
-Step3. Go back to the project directory `src` folder
+Step4: Configure Model Optimizer using below commnads in command prompt
+```
+cd C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\model_optimizer\install_prerequisites
+install_prerequisites.bat
+```
+
+Step5: Varify installation
+```
+cd C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\demo\
+demo_squeezenet_download_convert_run.bat
+```
+Above command should give output like this image
+![optimizer_output](/imgs/image_classification_script_output_win.png)
+
+
+## Demo:
+
+Step1. Clone the Repository using `git clone https://github.com/bhadreshpsavani/Computer-Pointer-Controller.git`
+
+Step2. Create Virtual Environment using command `python -m venv base` in the command prompt, then activate environment using below command,
+```
+cd venv/Scripts/
+activate
+```
+
+Step3. install all the dependency using `pip install requirements.txt`.
+
+Step4. Instantiate OpenVino Environment. For windows use below command
+```
+cd C:\Program Files (x86)\IntelSWTools\openvino\bin\
+setupvars.bat
+```
+
+Step5. Go back to the project directory `src` folder
 ```
 cd path_of_project_directory
 cd src
 ```
 
-Step4. Run below commands to execute the project
+Step6. Run below commands to execute the project
 ```
 python main.py -fd ../intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \ 
 -lr ../intel/landmarks-regression-retail-0009/FP32-INT8/landmarks-regression-retail-0009.xml \ 
