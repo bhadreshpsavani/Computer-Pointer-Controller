@@ -58,7 +58,7 @@ Step1. Clone the Repository using `git clone https://github.com/bhadreshpsavani/
 
 Step2. Create Virtual Environment using command `python -m venv base` in the command prompt, then activate environment using below command,
 ```
-cd venv/Scripts/
+cd base/Scripts/
 activate
 ```
 
