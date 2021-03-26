@@ -53,7 +53,7 @@ PyScreeze==0.1.26
 PySocks==1.7.1
 PyTweening==1.0.3
 pywin32==227
-PyYAML==5.3.1
+PyYAML==5.4
 requests==2.20.0
 ruamel-yaml==0.15.87
 six==1.15.0
