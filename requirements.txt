@@ -44,7 +44,7 @@ PyAutoGUI==0.9.50
 pycosat==0.6.3
 pycparser==2.20
 PyGetWindow==0.0.8
-Pygments==2.6.1
+Pygments==2.7.4
 PyMsgBox==1.0.8
 pyOpenSSL==19.1.0
 pyperclip==1.8.0
